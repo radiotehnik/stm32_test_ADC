@@ -63,12 +63,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define drv_PUL_Pin GPIO_PIN_0
-#define drv_PUL_GPIO_Port GPIOA
+#define adc_USART1_detect_Pin GPIO_PIN_1
+#define adc_USART1_detect_GPIO_Port GPIOC
 #define led_TIMER_Pin GPIO_PIN_5
 #define led_TIMER_GPIO_Port GPIOA
 #define led_GREEN_Pin GPIO_PIN_12
 #define led_GREEN_GPIO_Port GPIOB
+#define drv_PUL_Pin GPIO_PIN_15
+#define drv_PUL_GPIO_Port GPIOA
 #define drv_DIR_Pin GPIO_PIN_10
 #define drv_DIR_GPIO_Port GPIOC
 #define drv_EN_Pin GPIO_PIN_12
