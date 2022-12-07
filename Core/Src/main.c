@@ -90,7 +90,11 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
+	float voltage_USART1_detect = 0;
+	float voltage_USART1_detect_old = 0;
+	
 	uint16_t i = 0;
+	uint16_t i_old = 0;
 	char str[50];
 
   /* USER CODE END 1 */
@@ -137,12 +141,18 @@ int main(void)
   {
 		HAL_ADC_Start(&hadc);
 		HAL_ADC_PollForConversion(&hadc,100);
-		i = HAL_ADC_GetValue(&hadc);
+		voltage_USART1_detect = (float)HAL_ADC_GetValue(&hadc)*3/4096;
 		
-		sprintf((char *)str, "ADV Value = %04d\n",i);
+		if (((voltage_USART1_detect - voltage_USART1_detect_old) >= 0.05) || ((voltage_USART1_detect_old - voltage_USART1_detect) >= 0.05))
+		{
+		sprintf((char *)str, "ADV Value = %.2f V\n",voltage_USART1_detect);
 		HAL_UART_Transmit(&huart1, (uint8_t *)str, strlen((char *)str), 100);
+		voltage_USART1_detect_old = voltage_USART1_detect;
+		}
 		HAL_ADC_Stop(&hadc);
-		HAL_Delay(1000);
+		
+		
+		
     /* USER CODE END WHILE */
 	
     /* USER CODE BEGIN 3 */
