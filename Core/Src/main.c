@@ -90,7 +90,8 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	uint16_t i = 0;
+	char str[50];
 
   /* USER CODE END 1 */
 
@@ -121,13 +122,12 @@ int main(void)
   /* USER CODE BEGIN 2 */
 	
 	HAL_TIM_Base_Start_IT(&htim6);
-	//HAL_TIM_Base_Start_IT(&htim21);
-	HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); // Запустить pwm на таймере 2, 1 канале
+	HAL_TIM_Base_Start_IT(&htim21);
+	//HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); // Запустить pwm на таймере 2, 1 канале
 	//HAL_UART_Receive_IT(&huart1, rx_buffer, 1);//Разрешаем прием данных, размером в 1 символ.
 	
-	HAL_GPIO_WritePin (drv_EN_GPIO_Port,drv_EN_Pin,GPIO_PIN_SET); // Двигатель остановлен
 
-	//Forvard_run();
+	
 	HAL_Delay(500);
   /* USER CODE END 2 */
 
@@ -135,8 +135,16 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		HAL_ADC_Start(&hadc);
+		HAL_ADC_PollForConversion(&hadc,100);
+		i = HAL_ADC_GetValue(&hadc);
+		
+		sprintf((char *)str, "ADV Value = %04d\n",i);
+		HAL_UART_Transmit(&huart1, (uint8_t *)str, strlen((char *)str), 100);
+		HAL_ADC_Stop(&hadc);
+		HAL_Delay(1000);
     /* USER CODE END WHILE */
-
+	
     /* USER CODE BEGIN 3 */
 
 		
