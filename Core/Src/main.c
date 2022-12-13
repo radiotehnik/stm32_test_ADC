@@ -56,7 +56,7 @@ DMA_HandleTypeDef hdma_usart1_tx;
 
 /* USER CODE BEGIN PV */
 
-
+uint16_t ADC_data = 0;
 
 
 /* USER CODE END PV */
@@ -130,7 +130,10 @@ int main(void)
 	//HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_1); // Запустить pwm на таймере 2, 1 канале
 	//HAL_UART_Receive_IT(&huart1, rx_buffer, 1);//Разрешаем прием данных, размером в 1 символ.
 	
-
+	HAL_ADCEx_Calibration_Start(&hadc,ADC_SINGLE_ENDED); // калибровка АЦП
+	//HAL_ADC_Start_IT(&hadc); // Включим прерывание АЦП
+	//HAL_ADC_Start(&hadc);
+	
 	
 	HAL_Delay(500);
   /* USER CODE END 2 */
@@ -139,11 +142,14 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+		
+		//===========Ручной опрос АЦП=================
 		HAL_ADC_Start(&hadc);
+		HAL_ADCEx_Calibration_Start(&hadc,ADC_SINGLE_ENDED); // калибровка АЦП
 		HAL_ADC_PollForConversion(&hadc,100);
 		voltage_USART1_detect = (float)HAL_ADC_GetValue(&hadc)*3/4096;
-		
-		if (((voltage_USART1_detect - voltage_USART1_detect_old) >= 0.05) || ((voltage_USART1_detect_old - voltage_USART1_detect) >= 0.05))
+	
+		if (((voltage_USART1_detect - voltage_USART1_detect_old) >= 0.01f) || ((voltage_USART1_detect_old - voltage_USART1_detect) >= 0.01f))
 		{
 		sprintf((char *)str, "ADV Value = %.2f V\n",voltage_USART1_detect);
 		HAL_UART_Transmit(&huart1, (uint8_t *)str, strlen((char *)str), 100);
@@ -151,10 +157,23 @@ int main(void)
 		}
 		HAL_ADC_Stop(&hadc);
 		
-		
-		
+		//===========Ручной опрос АЦП=================
+
+		//=========== опрос АЦП в прерывании===================
+		/*
+		voltage_USART1_detect = (float)ADC_data*3/4096;
+		if (((voltage_USART1_detect - voltage_USART1_detect_old) >= 0.09f) || ((voltage_USART1_detect_old - voltage_USART1_detect) >= 0.09f))
+		{
+		sprintf((char *)str, "ADV Value = %.2f V\n",voltage_USART1_detect);
+		HAL_UART_Transmit(&huart1, (uint8_t *)str, strlen((char *)str), 100);
+		voltage_USART1_detect_old = voltage_USART1_detect;
+		}
+		HAL_Delay(100);
+		*/
+		//=========== опрос АЦП в прерывании===================
+
     /* USER CODE END WHILE */
-	
+
     /* USER CODE BEGIN 3 */
 
 		
@@ -234,9 +253,9 @@ static void MX_ADC_Init(void)
   */
   hadc.Instance = ADC1;
   hadc.Init.OversamplingMode = DISABLE;
-  hadc.Init.ClockPrescaler = ADC_CLOCK_SYNC_PCLK_DIV2;
+  hadc.Init.ClockPrescaler = ADC_CLOCK_ASYNC_DIV8;
   hadc.Init.Resolution = ADC_RESOLUTION_12B;
-  hadc.Init.SamplingTime = ADC_SAMPLETIME_1CYCLE_5;
+  hadc.Init.SamplingTime = ADC_SAMPLETIME_79CYCLES_5;
   hadc.Init.ScanConvMode = ADC_SCAN_DIRECTION_FORWARD;
   hadc.Init.DataAlign = ADC_DATAALIGN_RIGHT;
   hadc.Init.ContinuousConvMode = DISABLE;
@@ -247,7 +266,7 @@ static void MX_ADC_Init(void)
   hadc.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc.Init.Overrun = ADC_OVR_DATA_PRESERVED;
   hadc.Init.LowPowerAutoWait = DISABLE;
-  hadc.Init.LowPowerFrequencyMode = DISABLE;
+  hadc.Init.LowPowerFrequencyMode = ENABLE;
   hadc.Init.LowPowerAutoPowerOff = DISABLE;
   if (HAL_ADC_Init(&hadc) != HAL_OK)
   {
@@ -258,6 +277,14 @@ static void MX_ADC_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_11;
   sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_13;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
   {
     Error_Handler();
@@ -520,7 +547,11 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) // коллбек для прерывания АЦП. Сюда попадём, когда преобразование завершится
+{
+	//ADC_data = HAL_ADC_GetValue(hadc);
+	//HAL_ADC_Start_IT(hadc); // Включим прерывание АЦП
+}
 /* USER CODE END 4 */
 
 /**

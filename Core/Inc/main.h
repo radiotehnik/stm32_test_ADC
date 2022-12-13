@@ -65,6 +65,8 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 #define adc_USART1_detect_Pin GPIO_PIN_1
 #define adc_USART1_detect_GPIO_Port GPIOC
+#define adc_USART_aux_detect_Pin GPIO_PIN_3
+#define adc_USART_aux_detect_GPIO_Port GPIOC
 #define led_TIMER_Pin GPIO_PIN_5
 #define led_TIMER_GPIO_Port GPIOA
 #define led_GREEN_Pin GPIO_PIN_12
