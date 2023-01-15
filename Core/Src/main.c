@@ -34,7 +34,6 @@
 
 
 
-
 //
 /* USER CODE END PD */
 
@@ -58,8 +57,10 @@ DMA_HandleTypeDef hdma_usart1_tx;
 /* USER CODE BEGIN PV */
 
 
-volatile uint16_t ADC_data[2] = {0,0}; // у нас два канала поэтому массив из двух элементов
+volatile uint16_t ADC_data[4] = {0,0,0,0}; // у нас два канала поэтому массив из двух элементов
 volatile uint8_t flag_ADC_DMA = 0;
+
+
 
 /* USER CODE END PV */
 
@@ -94,13 +95,23 @@ int main(void)
   /* USER CODE BEGIN 1 */
 	float voltage_USART1_detect = 0;
 	float voltage_USART1_detect_old = 0;
+	float voltage_BUS_VOLT = 0;
+	float voltage_MOTOR_VOLT = 0;
+	
 	
 	float voltage_USART2_detect = 0;
 	float voltage_USART2_detect_old = 0;
+	float voltage_BUS_VOLT_old = 0;
+	float voltage_MOTOR_VOLT_old = 0;
 	
+	float Vmotor = 1.73f;
+	float Vusb = 2.5f;
+	float Vbus_volt = 2.6f;
+
 	uint16_t i = 0;
 	uint16_t i_old = 0;
-	char str[50];
+	char str[100];
+	//float ADC_diff_Value_TRESHHOLD = 0.03f;
 
   /* USER CODE END 1 */
 
@@ -137,12 +148,12 @@ int main(void)
 	
 	HAL_ADCEx_Calibration_Start(&hadc,ADC_SINGLE_ENDED); // калибровка АЦП
 	//HAL_ADC_Start(&hadc);
-	HAL_ADC_Start_DMA(&hadc, (uint32_t*)&ADC_data, 2); // стартуем АЦП
+	HAL_ADC_Start_DMA(&hadc, (uint32_t*)&ADC_data, 4); // стартуем АЦП
 	//HAL_ADC_Start(&hadc);
 	//HAL_ADC_Start_IT(&hadc); // Включим прерывание АЦП
-		
-	
 	HAL_Delay(500);
+//	sprintf((char *)str, "ADC Ch9 = %.2f V\t\tADC Ch11 = %.2f V\t\tADC Ch12 = %.2f V\t\tADC Ch13 = %.2f V\n",15.5,15.5,15.5,15.5);
+//	HAL_UART_Transmit(&huart1, (uint8_t *)str, strlen((char *)str), 100);
   /* USER CODE END 2 */
 
   /* Infinite loop */
@@ -161,21 +172,44 @@ int main(void)
 			flag_ADC_DMA = 0;
 			HAL_ADC_Stop_DMA(&hadc); // это необязательно
 			
-			voltage_USART1_detect = (float)ADC_data[0]*3/4096;
-			voltage_USART2_detect = (float)ADC_data[1]*3/4096;
+			voltage_MOTOR_VOLT = (float)((3/4096)*ADC_data[0]*6.3f);
+			voltage_USART1_detect = (float)((3/4096)*ADC_data[1]*1.6f);
+			voltage_BUS_VOLT = (float)((3/4096)*ADC_data[2]*2.5f);
+			voltage_USART2_detect = (float)((3/4096)*ADC_data[3]*1.6f);
+			/*
+			voltage_MOTOR_VOLT = (float)ADC_data[0]*3*11/4096;
+			voltage_USART1_detect = (float)ADC_data[1]*3*2/4096;
+			voltage_BUS_VOLT = (float)ADC_data[2]*3*2.9f/4096;
+			voltage_USART2_detect = (float)ADC_data[3]*3*2/4096;
+			*/
+			/*
+			if ( ( ((voltage_USART1_detect - voltage_USAR
+			T1_detect_old) >= 0.05f) || ((voltage_USART1_detect_old - voltage_USART1_detect) >= 0.05f) )
+				 ||  ((voltage_USART2_detect - voltage_USART2_detect_old) >= 0.05f) || ((voltage_USART2_detect_old - voltage_USART2_detect) >= 0.05f) )
+			*/
 			
-			if (( ((voltage_USART1_detect - voltage_USART1_detect_old) >= 0.01f) || ((voltage_USART1_detect_old - voltage_USART1_detect) >= 0.01f) )
-				 || ((voltage_USART2_detect - voltage_USART2_detect_old) >= 0.01f) || ((voltage_USART2_detect_old - voltage_USART2_detect) >= 0.01f) )
+			if (((voltage_USART1_detect - voltage_USART1_detect_old) >= 0.05f) ||((voltage_USART1_detect_old - voltage_USART1_detect) >= 0.05f) ||
+				 ((voltage_USART2_detect - voltage_USART2_detect_old) >= 0.05f)  ||((voltage_USART2_detect_old - voltage_USART2_detect) >= 0.05f) ||
+				 ((voltage_BUS_VOLT - voltage_BUS_VOLT_old) >= 0.1f)             ||((voltage_BUS_VOLT_old - voltage_BUS_VOLT) >= 0.1f) ||
+				 ((voltage_MOTOR_VOLT - voltage_MOTOR_VOLT_old) >= 0.1f)         ||((voltage_MOTOR_VOLT_old - voltage_MOTOR_VOLT) >= 0.1f) )
 			{
-				sprintf((char *)str, "ADC Value Ch11 = %.2f V\t\tADC Value Ch13 = %.2f V\n",voltage_USART1_detect,voltage_USART2_detect);
+				
+				//sprintf((char *)str, "ADC Ch11 = %.2f V\t\tADC Ch12 = %.2f V\t\tADC Ch13 = %.2f V\n",voltage_USART1_detect,voltage_BUS_VOLT,voltage_USART2_detect);
+				sprintf((char *)str, "ADC Ch9 = %.2f V\t\tADC Ch11 = %.2f V\t\tADC Ch12 = %.2f V\t\tADC Ch13 = %.2f V\n",voltage_MOTOR_VOLT,voltage_USART1_detect,voltage_BUS_VOLT,voltage_USART2_detect);
 				HAL_UART_Transmit(&huart1, (uint8_t *)str, strlen((char *)str), 100);
 			}
 					
 			voltage_USART1_detect_old = voltage_USART1_detect;
 			voltage_USART2_detect_old = voltage_USART2_detect;
+			voltage_BUS_VOLT_old = voltage_BUS_VOLT;
+			voltage_MOTOR_VOLT_old = voltage_MOTOR_VOLT;
+			
 			ADC_data[0] = 0;
 			ADC_data[1] = 0;
-			HAL_ADC_Start_DMA(&hadc, (uint32_t*)&ADC_data, 2); // стартуем АЦП
+			ADC_data[2] = 0;
+			ADC_data[3] = 0;
+			
+			HAL_ADC_Start_DMA(&hadc, (uint32_t*)&ADC_data, 4); // стартуем АЦП
 	}
 		/*
 		if (((voltage_USART1_detect - voltage_USART1_detect_old) >= 0.01f) || ((voltage_USART1_detect_old - voltage_USART1_detect) >= 0.01f))
@@ -305,8 +339,24 @@ static void MX_ADC_Init(void)
 
   /** Configure for the selected ADC regular channel to be converted.
   */
-  sConfig.Channel = ADC_CHANNEL_11;
+  sConfig.Channel = ADC_CHANNEL_9;
   sConfig.Rank = ADC_RANK_CHANNEL_NUMBER;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_11;
+  if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+
+  /** Configure for the selected ADC regular channel to be converted.
+  */
+  sConfig.Channel = ADC_CHANNEL_12;
   if (HAL_ADC_ConfigChannel(&hadc, &sConfig) != HAL_OK)
   {
     Error_Handler();

@@ -22,21 +22,27 @@ Dialog DLL:      TARMCM1.DLL V1.14.4.0
  
 <h2>Project:</h2>
 D:\Electrinix\STM32\stm_32_soft\stm_32_my_soft\stm32_l053_soft\CUBE\stm32_test_ADC\MDK-ARM\stm32_test_ADC.uvprojx
-Project File Date:  12/14/2022
+Project File Date:  01/16/2023
 
 <h2>Output:</h2>
 *** Using Compiler 'V5.06 update 7 (build 960)', folder: 'C:\Keil_v5\ARM\ARMCC\Bin'
 Build target 'stm32_test_ADC'
 compiling main.c...
-../Core/Src/main.c(101): warning:  #177-D: variable "i"  was declared but never referenced
+../Core/Src/main.c(107): warning:  #177-D: variable "Vmotor"  was declared but never referenced
+  	float Vmotor = 1.73f;
+../Core/Src/main.c(108): warning:  #177-D: variable "Vusb"  was declared but never referenced
+  	float Vusb = 2.5f;
+../Core/Src/main.c(109): warning:  #177-D: variable "Vbus_volt"  was declared but never referenced
+  	float Vbus_volt = 2.6f;
+../Core/Src/main.c(111): warning:  #177-D: variable "i"  was declared but never referenced
   	uint16_t i = 0;
-../Core/Src/main.c(102): warning:  #177-D: variable "i_old"  was declared but never referenced
+../Core/Src/main.c(112): warning:  #177-D: variable "i_old"  was declared but never referenced
   	uint16_t i_old = 0;
-../Core/Src/main.c: 2 warnings, 0 errors
+../Core/Src/main.c: 5 warnings, 0 errors
 linking...
-Program Size: Code=16264 RO-data=436 RW-data=24 ZI-data=2264  
+Program Size: Code=15908 RO-data=512 RW-data=28 ZI-data=2268  
 FromELF: creating hex file...
-"stm32_test_ADC\stm32_test_ADC.axf" - 0 Error(s), 2 Warning(s).
+"stm32_test_ADC\stm32_test_ADC.axf" - 0 Error(s), 5 Warning(s).
 
 <h2>Software Packages used:</h2>
 
